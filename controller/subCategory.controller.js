@@ -98,12 +98,12 @@ export const postSubCategory = async (req, res) => {
 
 export const updateSubCategory = async (req, res) => {
     try {
-        const subCategory = await subCategory.findById(req.params.id);
-        if (!subCategory) throw new Error("category doesn't exits");
-        let subCateImage = subCategory.subCategoryImage;
+        const subCate = await subCategory.findById(req.params.id);
+        if (!subCate) throw new Error("sub category doesn't exits");
+        let subCateImage = subCate.subCategoryImage;
         if (req.file) {
-            if (fs.existsSync(`./images/category/${subCateImage}`)) {
-                fs.unlinkSync(`./images/category/${subCateImage}`);
+            if (fs.existsSync(`./images/sub-category/${subCateImage}`)) {
+                fs.unlinkSync(`./images/sub-category/${subCateImage}`);
             }
             subCateImage = req.file.filename;
         }
@@ -127,19 +127,19 @@ export const updateSubCategory = async (req, res) => {
     }
 }
 
-export const deleteCategory = async (req, res) => {
+export const deleteSubCategory = async (req, res) => {
     try {
-        const category = await Category.findById(req.params.id);
-        if (!category) throw new Error("category doesn't exits");
-        const delcate = await Category.deleteOne({ _id: req.params.id });
-        if (delcate.acknowledged) {
-            if (fs.existsSync(`./images/category/${category.categoryImage}`)) {
-                fs.unlinkSync(`./images/category/${category.categoryImage}`);
+        const subCate = await subCategory.findById(req.params.id);
+        if (!subCate) throw new Error("sub category doesn't exits");
+        const delSubCate = await subCategory.deleteOne({ _id: req.params.id });
+        if (delSubCate.acknowledged) {
+            if (fs.existsSync(`./images/sub-category/${subCate.subCategoryImage}`)) {
+                fs.unlinkSync(`./images/sub-category/${subCate.subCategoryImage}`);
             }
         }
         return res.status(200).json({
             status: "deleted",
-            category: delcate
+            category: delSubCate
         })
     } catch (error) {
         return res.status(500).json({

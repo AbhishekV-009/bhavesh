@@ -7,6 +7,7 @@ export const getAllCategory = async (req, res) => {
         return res.status(200).json({
             status: "success",
             total: allCategory.length,
+            images: `http://localhost:8000/images/category/{imageName}`,
             data: {
                 category: allCategory
             }
@@ -42,7 +43,6 @@ export const postCategory = async (req, res) => {
         const allCategory = await Category.create({ ...req.body, categoryImage: req.file.filename });
         return res.status(201).json({
             status: "success",
-            images: `http://localhost:8000/images/category/{imageName}`,
             data: {
                 category: allCategory
             }
