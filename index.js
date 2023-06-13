@@ -6,6 +6,7 @@ import subCategoryRouter from "./routes/subCategory.route";
 import productRouter from "./routes/product.route";
 import cartRouter from "./routes/cart.route";
 import userRouter from "./routes/user.route"
+import orderRouter from "./routes/order.route";
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 8001
@@ -22,7 +23,7 @@ app.use("/category",categoryRouter);
 app.use("/subCategory",subCategoryRouter);
 app.use("/product",productRouter);
 app.use('/cart',cartRouter)
-
+app.use("/order",orderRouter)
 
 app.use("/user",userRouter)
 

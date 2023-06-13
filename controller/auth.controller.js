@@ -101,7 +101,7 @@ export const authorized = async (req,res,next)=>{
     try {
         const user = req.user;
         if(user.role !== "admin"){
-            throw new Error("this user has no rigth")
+            throw new Error("this user has no Rights")
         }
         next();
     } catch (error) {

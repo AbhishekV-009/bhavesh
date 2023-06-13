@@ -8,6 +8,7 @@ const subCategoryModel = new mongoose.Schema({
     },
     category:{
         type:Schema.Types.ObjectId,
+        ref:Category,
         required:[true,'please tell which type of category it is']
     },
     status:{
