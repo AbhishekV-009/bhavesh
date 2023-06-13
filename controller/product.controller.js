@@ -37,6 +37,8 @@ export const getAllProduct = async (req, res) => {
         ]);
         return res.status(200).json({
             status: "success",
+            total: product.length,
+            images: `http://localhost:8000/images/product/{imageName}`,
             data: {
                 product
             }
