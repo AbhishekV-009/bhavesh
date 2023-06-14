@@ -7,6 +7,7 @@ import productRouter from "./routes/product.route";
 import cartRouter from "./routes/cart.route";
 import userRouter from "./routes/user.route"
 import orderRouter from "./routes/order.route";
+import addressRouter from "./routes/address.route";
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 8001
@@ -26,6 +27,7 @@ app.use('/cart',cartRouter)
 app.use("/order",orderRouter)
 
 app.use("/user",userRouter)
+app.use("/address",addressRouter)
 
 
 app.listen(port,()=>{

@@ -1,13 +1,13 @@
 import express from "express";
 import {
-    addUser,
     delUser,
     getUsers,
-    login,
+    logIn,
+    signUp,
     updUser,
 } from "../controller/user.controller";
 import { body } from "express-validator";
-import { authorized, logIn, protect, signUp } from "../controller/auth.controller";
+import { authorized, protect } from "../middleware/middleware";
 const route = express.Router();
 
 route.post("/signUp", [

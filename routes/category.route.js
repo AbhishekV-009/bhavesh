@@ -1,7 +1,8 @@
 import express from "express";
 import { deleteCategory, getAllCategory, getCategoryById, postCategory, updateCategory } from "../controller/category.controller";
 import multerFunction from "../utils/multerFunction";
-import { authorized, protect } from "../controller/auth.controller";
+import { authorized, protect } from "../middleware/middleware";
+
 const categoryRouter = express.Router();
 
 categoryRouter.get('/',protect,getAllCategory);

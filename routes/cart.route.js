@@ -1,6 +1,7 @@
 import express from "express"
 import { addToCart, delCart, getAllCart, getCart, updateCart } from "../Controller/cart.controllers"
-import { authorized, protect } from "../controller/auth.controller"
+import { authorized, protect } from "../middleware/middleware";
+
 const route=express.Router()
 
 route.get("/getCart",protect,getCart)

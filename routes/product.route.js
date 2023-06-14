@@ -1,7 +1,7 @@
 import express from "express";
 import { deleteProduct, deleteProductImage, getAllProduct, getProductById, postProduct, updateProduct } from "../controller/product.controller";
 import multerFunction from "../utils/multerFunction";
-import { authorized, protect } from "../controller/auth.controller";
+import { authorized, protect } from "../middleware/middleware";
 const productRouter = express.Router();
 
 productRouter.get('/',protect,getAllProduct)

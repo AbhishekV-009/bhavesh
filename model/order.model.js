@@ -9,16 +9,12 @@ const orderModel = new mongoose.Schema({
         required: [true, "user is required"]
     },
     productID: {
-        type: Schema.Types.ObjectId,
+        type: [Schema.Types.ObjectId],
         ref:Product,
         required: [true, "product is required"]
-    },
-    quantity:{
-        type:Number,
-        default:1
-    },
+    },  
     userBillingAddress: { 
-        type: String,
+        type: Object,
         required: [true, "billing address is required"]
     },
     userShippingAddress: {
