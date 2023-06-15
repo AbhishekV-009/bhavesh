@@ -9,7 +9,7 @@ orderRouter.get("/allOrder",protect,authorized,allOrder)
 
 
 orderRouter.post("/add-order",protect,addSingleOrder)
-orderRouter.post("/cart-order",protect,addCartOrder)
+orderRouter.post("/cart-order",protect,addCartOrder )
 
 
 

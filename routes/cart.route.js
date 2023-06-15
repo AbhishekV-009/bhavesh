@@ -4,10 +4,10 @@ import { authorized, protect } from "../middleware/middleware";
 
 const route=express.Router()
 
-route.get("/getCart",protect,getCart)
-route.post("/addToCart",protect,addToCart)
-route.delete("/delCart/:id",protect,delCart)
+route.get("/",protect,getCart)
+route.post("/add-cart",protect,addToCart)
 route.patch("/updCart-quantity/:cartID/:status",protect,updateCart)
+route.delete("/delete-cart/:id",protect,delCart)
 
 route.get("/allCart",protect,authorized,getAllCart)
 

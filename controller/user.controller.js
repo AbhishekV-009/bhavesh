@@ -1,6 +1,7 @@
 import userModel from "../model/user.model";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import Cookies from 'cookies'
 import { validationResult } from "express-validator"
 
 
@@ -27,6 +28,10 @@ export const signUp = async (req, res) => {
         const token = jwt.sign({ id: newUser.id }, process.env.SECRET_WEB_TOKEN, {
             expiresIn: "90d"
         });
+
+        var cookies = new Cookies(req, res)
+        cookies.set('create token', token)
+
         if (newUser) {
             res.status(200).json({
                 status: "sign up successfully",
@@ -66,6 +71,9 @@ export const logIn = async (req, res) => {
         const token = jwt.sign({ id: existUser.id }, process.env.SECRET_WEB_TOKEN, {
             expiresIn: "90d"
         });
+
+        var cookies = new Cookies(req, res)
+        cookies.set('login token', token)
 
         return res.status(201).json({
             token,

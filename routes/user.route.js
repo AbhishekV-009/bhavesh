@@ -3,7 +3,7 @@ import {
     delUser,
     getUsers,
     logIn,
-    signUp, 
+    signUp,
     updUser,
 } from "../controller/user.controller";
 import { body } from "express-validator";

@@ -8,9 +8,9 @@ productRouter.get('/',protect,getAllProduct)
 
 productRouter.get('/:id',protect,getProductById)
 
-productRouter.post('/add-product',multerFunction('./images/product').array('productImage',3),protect,authorized,postProduct)
+productRouter.post('/add-product',protect,authorized,multerFunction('./images/product').array('productImage',3),postProduct)
 
-productRouter.patch('/update-product/:id',multerFunction('./images/product').array('productImage',3),protect,authorized,updateProduct)
+productRouter.patch('/update-product/:id',protect,authorized,multerFunction('./images/product').array('productImage',3),updateProduct)
 
 productRouter.delete('/delete-product/:id',protect,authorized,deleteProduct)
 
