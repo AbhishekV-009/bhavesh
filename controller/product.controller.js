@@ -3,8 +3,30 @@ import mongoose from "mongoose";
 import fs from 'fs';
 
 export const getAllProduct = async (req, res) => {
+    
     try {
+        const limit = req.query.limit * 1 || 100;
+        const page = req.query.page * 1 || 1;
+        const sortByPrice = req.query.sortPrice *1 || 1;
+        const matchStage = {
+            $match:{}
+        }
+
+        let queryCopy = {...req.query}
+        const excludedFile = ["limit","page","sortPrice"];
+        excludedFile.forEach((ele)=> delete queryCopy[ele]);
+        queryCopy = JSON.parse(JSON.stringify(queryCopy).replace(/\b(gte|lte|gt|lt)\b/g, match => `$${match}`));
+        for(let i in queryCopy.price){
+            queryCopy.price[i] = Number(queryCopy.price[i]);
+        }
+
+        
+        if(req.query.price){
+            matchStage.$match = queryCopy
+        }
+
         const product = await Product.aggregate([
+            matchStage,
             {
                 $lookup: {
                     from: "categories",
@@ -33,6 +55,15 @@ export const getAllProduct = async (req, res) => {
                     "category.__v": 0,
                     "subCategory.__v": 0
                 }
+            },
+            {
+                $sort:{price:sortByPrice}
+            },
+            {
+                $skip: (page - 1) * limit
+            },
+            {
+                $limit: limit
             }
         ]);
         return res.status(200).json({
