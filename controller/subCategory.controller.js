@@ -4,7 +4,15 @@ import fs from "fs";
 
 export const getAllSubCategory = async (req, res) => {
     try {
+        const matchStage = {
+            $match:{}
+        }
+
+        if(req.query.category){
+            matchStage.$match.category = new mongoose.Types.ObjectId(req.query.category);
+        }
         const allSubCategory = await subCategory.aggregate([
+            matchStage,
             {
                 $lookup:{
                     from:"categories",

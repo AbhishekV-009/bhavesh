@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const categoryModel = new mongoose.Schema({
-    categoryName:{
+    name:{
         type:String,
         required:[true,"category name can't be empty"]
     },
-    categoryStatus:{
+    status:{
         type:String,
         enum:{
             values:["enable","disable"],
@@ -13,7 +13,7 @@ const categoryModel = new mongoose.Schema({
         },
         default:"enable"
     },
-    categoryDescription:{
+    description:{
         type:String,
     },
     categoryImage:{

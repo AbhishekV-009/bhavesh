@@ -1,9 +1,8 @@
 import Product from "../model/product.model"
 import mongoose from "mongoose";
-import fs from 'fs';
+import fs from 'fs'; 
 
 export const getAllProduct = async (req, res) => {
-    
     try {
         const limit = req.query.limit * 1 || 100;
         const page = req.query.page * 1 || 1;
@@ -20,10 +19,16 @@ export const getAllProduct = async (req, res) => {
             queryCopy.price[i] = Number(queryCopy.price[i]);
         }
 
-        
         if(req.query.price){
-            matchStage.$match = queryCopy
+            matchStage.$match.price = queryCopy.price
         }
+        if(req.query.category){
+            matchStage.$match.category = new mongoose.Types.ObjectId(req.query.category)
+        }
+        if(req.query.subCategory){
+            matchStage.$match.subCategory = new mongoose.Types.ObjectId(req.query.subCategory)
+        }
+
 
         const product = await Product.aggregate([
             matchStage,
