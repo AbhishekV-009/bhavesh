@@ -1,37 +1,48 @@
 import Product from "../model/product.model"
 import mongoose from "mongoose";
-import fs from 'fs'; 
+import fs from 'fs';
 
 export const getAllProduct = async (req, res) => {
     try {
-        const limit = req.query.limit * 1 || 100;
-        const page = req.query.page * 1 || 1;
-        const sortByPrice = req.query.sortPrice *1 || 1;
-        const matchStage = {
-            $match:{}
-        }
+        const limit = Number(req.query.limit) || 100;
+        const page = Number(req.query.page) || 1;
+        const sortByPrice = Number(req.query.sortPrice) || 1;
 
-        let queryCopy = {...req.query}
-        const excludedFile = ["limit","page","sortPrice"];
-        excludedFile.forEach((ele)=> delete queryCopy[ele]);
+        const matchStage = {
+            $match: {}
+        }
+        // price gte lte
+        let queryCopy = { ...req.query }
         queryCopy = JSON.parse(JSON.stringify(queryCopy).replace(/\b(gte|lte|gt|lt)\b/g, match => `$${match}`));
-        for(let i in queryCopy.price){
+        for (let i in queryCopy.price) {
             queryCopy.price[i] = Number(queryCopy.price[i]);
         }
-
-        if(req.query.price){
+        if (req.query.price) {
             matchStage.$match.price = queryCopy.price
         }
-        if(req.query.category){
-            matchStage.$match.category = new mongoose.Types.ObjectId(req.query.category)
-        }
-        if(req.query.subCategory){
-            matchStage.$match.subCategory = new mongoose.Types.ObjectId(req.query.subCategory)
+
+        //get prroduct by category
+        if (req.query.category) {
+            matchStage.$match = {...matchStage.$match,"category._id":new mongoose.Types.ObjectId(req.query.category)}
         }
 
+        //get prroduct by subCategory
+        if (req.query.subCategory) {
+            matchStage.$match = {...matchStage.$match,"subCategory._id":new mongoose.Types.ObjectId(req.query.subCategory)}
+        }
+
+        // search by name category_name and subCategory_name
+        if (req.query.q) {
+            const rgx = (pattern) => new RegExp(`.*${pattern}.*`);
+            const searchRgx = rgx(req.query.q);
+            matchStage.$match.$or = [
+                { name: { $regex: searchRgx, $options: "i" } },
+                { "category.name": { $regex: searchRgx, $options: "i" } },
+                { "subCategory.name": { $regex: searchRgx, $options: "i" } },
+            ]
+        }
 
         const product = await Product.aggregate([
-            matchStage,
             {
                 $lookup: {
                     from: "categories",
@@ -61,8 +72,9 @@ export const getAllProduct = async (req, res) => {
                     "subCategory.__v": 0
                 }
             },
+            matchStage,
             {
-                $sort:{price:sortByPrice}
+                $sort: { price: sortByPrice }
             },
             {
                 $skip: (page - 1) * limit
