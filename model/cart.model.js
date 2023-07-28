@@ -1,34 +1,28 @@
 import mongoose from "mongoose";
-import productModel from "./product.model";
 import userModel from "./user.model";
-const cartModel = new mongoose.Schema({
-    userId: {
+
+const cartSchema = new mongoose.Schema({
+    userID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: userModel,
-        required: true,
+        required: [true,"userId is required"],
     },
-    productId: {
+    productID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: productModel,
-        required: true,
+        required: [true,"productId is required"],
     },
-    name: {
-        type: String,
-        required: true
+    colorID: {
+        type: mongoose.Schema.Types.ObjectId,
     },
-    image: {
-        type: Array,
-        required: true
+    sizeID: {
+        type: mongoose.Schema.Types.ObjectId,
     },
     quantity: {
         type: Number,
         default: 1,
-        required: true
-    },
-    price: {
-        type: Number,
-        required: true
+        required: [true,"quantity is required"]
     }
 })
 
-export default mongoose.model("cart", cartModel)
+const cartModel = mongoose.model("cart", cartSchema)
+export default cartModel

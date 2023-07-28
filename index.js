@@ -4,13 +4,13 @@ import mongoose from "mongoose";
 import cors from 'cors';
 import categoryRouter from "./routes/category.route";
 import subCategoryRouter from "./routes/subCategory.route";
-import productRouter from "./routes/product.route";
-import cartRouter from "./routes/cart.route";
 import userRouter from "./routes/user.route"
 import orderRouter from "./routes/order.route";
 import addressRouter from "./routes/address.route";
-
+import cartRoute from "./routes/cart.route";
+import productRouter from "./routes/product.routes";
 dotenv.config();
+
 const app = express();
 const port = process.env.PORT || 8001
 
@@ -29,15 +29,16 @@ mongoose.connect(process.env.DATABASE)
 app.use(express.json());
 app.use(express.static(__dirname));
 
+app.use("/user",userRouter)
+app.use("/address",addressRouter)
 
 app.use("/category",categoryRouter);
 app.use("/subCategory",subCategoryRouter);
-app.use("/product",productRouter);
-app.use('/cart',cartRouter)
-app.use("/order",orderRouter)
 
-app.use("/user",userRouter)
-app.use("/address",addressRouter)
+app.use('/product',productRouter)
+
+app.use("/cart",cartRoute)
+app.use("/order",orderRouter)
 
 
 app.listen(port,()=>{

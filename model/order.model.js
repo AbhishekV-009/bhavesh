@@ -1,24 +1,21 @@
 import mongoose, { Schema } from "mongoose";
 import userModel from "./user.model";
-import Product from "./product.model";
 
 const orderModel = new mongoose.Schema({
     userID: {
-        type: Schema.Types.ObjectId,
-        ref:userModel,
-        required: [true, "user is required"]
+        type: mongoose.Schema.Types.ObjectId,
+        ref: userModel,
+        required: [true, "userId is required"],
     },
     productID: {
-        type: [Schema.Types.ObjectId],
-        ref:Product,
-        required: [true, "product is required"]
-    },  
-    userBillingAddress: { 
-        type: Object,
-        required: [true, "billing address is required"]
+        type: mongoose.Schema.Types.ObjectId,
+        required: [true, "productId is required"],
     },
-    userShippingAddress: {
-        type: String
+    colorID: {
+        type: mongoose.Schema.Types.ObjectId,
+    },
+    sizeID: {
+        type: mongoose.Schema.Types.ObjectId,
     },
     createdAt: {
         type: Date,

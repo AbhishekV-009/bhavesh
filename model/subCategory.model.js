@@ -24,7 +24,8 @@ const subCategoryModel = new mongoose.Schema({
         type:String,
         required:[true,"add a sub category image"]
     }
-    
 })
+
+
 const subCategory = mongoose.model("subCategory",subCategoryModel);
 export default subCategory

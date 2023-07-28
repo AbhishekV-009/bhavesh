@@ -5,8 +5,8 @@ import { authorized, protect } from "../middleware/middleware";
 
 const categoryRouter = express.Router();
 
-categoryRouter.get('/',protect,getAllCategory);
-categoryRouter.get('/:id',protect,getCategoryById);
+categoryRouter.get('/',getAllCategory);
+categoryRouter.get('/:id',getCategoryById);
 
 categoryRouter.post('/add-category',protect,authorized,multerFunction('./images/category').single('categoryImage'),postCategory)
 categoryRouter.patch('/update-category/:id',protect,authorized,multerFunction('./images/category').single('categoryImage'),updateCategory)

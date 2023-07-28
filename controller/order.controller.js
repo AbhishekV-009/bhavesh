@@ -1,165 +1,141 @@
 import mongoose from "mongoose";
 import cartModel from "../model/cart.model";
 import Order from "../model/order.model";
-import Product from "../model/product.model";
+import { catchAsync } from "../utils/catchAsync";
 
-export const getOrder = async (req, res) => {
-    try {
-        const order = await Order.aggregate([
-            {
-                $match: { userID: new mongoose.Types.ObjectId(req.user.id) }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userID",
-                    foreignField: "_id",
-                    as: "userID"
-                }
-            },
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "productID",
-                    foreignField: "_id",
-                    as: "productID"
-                }
-            },
-            {
-                $unwind: "$userID"
-            },
-            {
-                $project: {
-                    "userID._id": 1,
-                    "userID.firstName": 1,
-                    "userID.lastName": 1,
-                    "userID.email": 1,
-                    "productID.name": 1,
-                    "productID.price": 1,
-                    "productID.category": 1,
-                    "productID.subCategory": 1,
-                    "productID.productImage": 1,
-                    "userBillingAddress": 1,
-                    "userShippingAddress": 1,
-                    "createdAt": 1
-                }
+export const getOrder = catchAsync(async (req, res) => {
+    const {id} = req.user;
+    const order = await Order.aggregate([
+        {
+            $match:{userID:new mongoose.Types.ObjectId(id)}
+        },
+        {
+            $lookup: {
+                from: "products",
+                foreignField: "_id",
+                localField: "productID",
+                as: "product"
             }
-        ])
-        return res.status(200).json({
-            status: "success",
-            length: order.length,
-            data: {
-                order
+        },
+        {
+            $unwind:"$product"
+        },
+        {
+            $unwind:"$product.colorAndSize"
+        },
+        {
+            $unwind:"$product.colorAndSize.sizeAndQuantity"
+        },
+        {
+            $match:{
+                $and:[
+                    {$expr:{$eq:["$product.colorAndSize._id","$colorID"]}},
+                    {$expr:{$eq:["$product.colorAndSize.sizeAndQuantity._id","$sizeID"]}}
+                ]
             }
-        })
-    } catch (error) {
-        return res.status(400).json({
-            status: "failed",
-            message: error.message
-        })
-    }
-}
+        },
+        {
+            $project:{
+                product:{
+                    description:0,
+                    shortDescription:0,
+                    categoryID:0,
+                    subCategoryID:0,
+                    status:0,
+                    createdAt:0,
+                    __v:0
+                },
+                __v:0
+            }
+        }
+    ])
+    return res.status(200).json({
+        status: "success",
+        length: order.length,
+        data: {
+            order
+        }
+    })
+})
 
-export const allOrder = async (req, res) => {
-    try {
-        const order = await Order.aggregate([
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userID",
-                    foreignField: "_id",
-                    as: "userID"
-                }
-            },
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "productID",
-                    foreignField: "_id",
-                    as: "productID"
-                }
-            },
-            {
-                $unwind: "$userID"
-            },
-            {
-                $project: {
-                    "userID._id": 1,
-                    "userID.firstName": 1,
-                    "userID.lastName": 1,
-                    "userID.email": 1,
-                    "productID.name": 1,
-                    "productID.price": 1,
-                    "productID.category": 1,
-                    "productID.subCategory": 1,
-                    "productID.productImage": 1,
-                    "userBillingAddress": 1,
-                    "userShippingAddress": 1,
-                    "createdAt": 1
-                }
+export const allOrder = catchAsync(async (req, res) => {
+    const order = await Order.aggregate([
+        {
+            $lookup: {
+                from: "products",
+                foreignField: "_id",
+                localField: "productID",
+                as: "product"
             }
-        ])
-        return res.status(200).json({
-            status: "success",
-            length: order.length,
-            data: {
-                order
+        },
+        {
+            $unwind:"$product"
+        },
+        {
+            $unwind:"$product.colorAndSize"
+        },
+        {
+            $unwind:"$product.colorAndSize.sizeAndQuantity"
+        },
+        {
+            $match:{
+                $and:[
+                    {$expr:{$eq:["$product.colorAndSize._id","$colorID"]}},
+                    {$expr:{$eq:["$product.colorAndSize.sizeAndQuantity._id","$sizeID"]}}
+                ]
             }
-        })
-    } catch (error) {
-        return res.status(400).json({
-            status: "failed",
-            message: error.message
-        })
-    }
-}
+        },
+        {
+            $project:{
+                product:{
+                    description:0,
+                    shortDescription:0,
+                    categoryID:0,
+                    subCategoryID:0,
+                    status:0,
+                    createdAt:0,
+                    __v:0
+                },
+                __v:0
+            }
+        }
+    ])
+    return res.status(200).json({
+        status: "success",
+        length: order.length,
+        data: {
+            order
+        }
+    })
+})
 
-export const addSingleOrder = async (req, res) => {
-    try {
-        const { id, address } = req.user;
-        const { productID } = req.body
-        const product = await Product.findById(productID);
-        if (!product) throw new Error("product is not exits");
-        const postOrder = await Order.create({
-            ...req.body,
-            userID: id,
-            userBillingAddress: address
-        })
-        return res.status(201).json({
-            status: "created",
-            data: {
-                order: postOrder
-            }
-        })
-    } catch (error) {
-        return res.status(400).json({
-            status: "failed",
-            message: error.message
-        })
-    }
-}
+export const addSingleOrder = catchAsync(async (req, res) => {
+    const { id } = req.user;
+    const { productID, colorID, sizeID } = req.body
+    const postOrder = await Order.create({
+        userID: id,
+        productID: productID,
+        colorID: colorID,
+        sizeID: sizeID
+    })
+    return res.status(201).json({
+        status: "created",
+        data: {
+            order: postOrder
+        }
+    })
+})
 
 
-export const addCartOrder = async (req, res) => {
-    try {
-        const { id, address } = req.user;
-        const cart = await cartModel.find({ userId: id });
-        if (cart <= 0) throw new Error("cart is empty");
-        const postOrder = await Order.create({
-            userID: id,
-            productID: cart.map(e => e.productId),
-            userBillingAddress: address
-        })
-        return res.status(201).json({
-            status: "created",
-            data: {
-                order: postOrder
-            }
-        })
-    } catch (error) {
-        return res.status(400).json({
-            status: "failed",
-            message: error.message
-        })
-    }
-}
+export const addCartOrder = catchAsync(async (req, res) => {
+    const { id } = req.user;
+    const cart = await cartModel.find({ userID: id });
+    if (cart <= 0) throw new Error("cart is empty");
+    const postOrder = await Order.insertMany(cart)
+    return res.status(201).json({
+        status: "created",
+        data: {
+            order: postOrder
+        }
+    })
+})

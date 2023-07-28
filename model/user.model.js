@@ -18,23 +18,25 @@ const userModel = new mongoose.Schema({
         type: Number,
         required: true
     },
-    address: {
-        street: {
-            type: String,
-        },
-        city: {
-            type: String,
-        },
-        state: {
-            type: String,
-        },
-        country: {
-            type: String,
-        },
-        postalCode: {
-            type: Number,
+    address: [
+        {
+            street: {
+                type: String,
+            },
+            city: {
+                type: String,
+            },
+            state: {
+                type: String,
+            },
+            country: {
+                type: String,
+            },
+            postalCode: {
+                type: Number,
+            }
         }
-    },
+    ],
     password: {
         type: String,
         required: true,

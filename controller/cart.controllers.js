@@ -1,235 +1,191 @@
-import mongoose from "mongoose";
+import { catchAsync } from '../utils/catchAsync'
 import cartModel from "../model/cart.model";
-import productModel from "../model/product.model";
+import mongoose from 'mongoose';
 
-export const addToCart = async (req, res) => {
-    try {
-        const { id } = req.user;
-        const { productId } = req.body
-        const product = await productModel.findOne({ _id: productId })
-        const exist = await cartModel.findOne({ userId: id, productId: productId })
-        if (exist) {
-            if (exist.quantity < 10 && exist.quantity >= 1) {
+export const getCart = catchAsync(async (req, res) => {
+    const { id } = req.user
+    const cartData = await cartModel.aggregate([
+        {
+            $match: { userID: new mongoose.Types.ObjectId(id) }
+        },
+        {
+            $lookup: {
+                from: "products",
+                foreignField: "_id",
+                localField: "productID",
+                as: "product"
+            }
+        },
+        {
+            $unwind: "$product"
+        },
+        {
+            $unwind: "$product.colorAndSize"
+        },
+        {
+            $unwind: "$product.colorAndSize.sizeAndQuantity"
+        },
+        {
+            $match: {
+                $and: [
+                    { $expr: { $eq: ["$product.colorAndSize._id", "$colorID"] } },
+                    { $expr: { $eq: ["$product.colorAndSize.sizeAndQuantity._id", "$sizeID"] } }
+                ]
+            }
+        },
+        {
+            $project: {
+                product: {
+                    description: 0,
+                    shortDescription: 0,
+                    categoryID: 0,
+                    subCategoryID: 0,
+                    status: 0,
+                    createdAt: 0,
+                    __v: 0
+                },
+                __v: 0
+            }
+        }
+    ]);
 
-                const updateQty = await cartModel.updateOne({ _id: exist._id }, {
-                    $set: {
-                        quantity: exist.quantity + 1
-                    }
-                })
-                if (updateQty) {
-                    return res.status(200).json({
-                        message: "quantity updated"
-                    })
-                } else {
-                    return res.status(200).json({
-                        message: "cannot update quantity"
-                    })
+    return res.status(201).json({
+        status: "success",
+        data: cartData
+    })
+})
+
+export const getAllCart = catchAsync(async (req, res) => {
+    const cartData = await cartModel.aggregate([
+        {
+            $lookup: {
+                from: "products",
+                foreignField: "_id",
+                localField: "productID",
+                as: "product"
+            }
+        },
+        {
+            $unwind: "$product"
+        },
+        {
+            $unwind: "$product.colorAndSize"
+        },
+        {
+            $unwind: "$product.colorAndSize.sizeAndQuantity"
+        },
+        {
+            $match: {
+                $and: [
+                    { $expr: { $eq: ["$product.colorAndSize._id", "$colorID"] } },
+                    { $expr: { $eq: ["$product.colorAndSize.sizeAndQuantity._id", "$sizeID"] } }
+                ]
+            }
+        },
+        {
+            $project: {
+                product: {
+                    description: 0,
+                    shortDescription: 0,
+                    categoryID: 0,
+                    subCategoryID: 0,
+                    status: 0,
+                    createdAt: 0,
+                    __v: 0
+                },
+                __v: 0
+            }
+        }
+    ])
+    return res.status(201).json({
+        message: "all Cart",
+        length: cartData.length,
+        data: cartData,
+    })
+})
+
+export const addToCart = catchAsync(async (req, res) => {
+    const { id } = req.user;
+    const { productID, colorID, sizeID } = req.body;
+    const exist = await cartModel.findOne({ userID: id, productID: productID })
+    if (exist) {
+        if (exist.quantity < 10 && exist.quantity >= 1) {
+            const updateQty = await cartModel.updateOne({ _id: exist._id, userID: id }, {
+                $set: {
+                    quantity: exist.quantity + 1
                 }
+            })
+            if (updateQty.acknowledged && updateQty.modifiedCount >= 1) {
+                return res.status(200).json({
+                    message: "quantity updated"
+                })
             } else {
                 return res.status(200).json({
-                    message: "limit exceed"
+                    message: "can't update quantity"
                 })
             }
-        }
-
-
-        const addData = await cartModel.create({
-            userId: id,
-            productId: productId,
-            name: product.name,
-            price: product.price,
-            image: product.productImage
-        })
-        if (addData) {
-            return res.status(201).json({
-                data: addData,
-                message: "added to cart"
-            })
-        }
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message
-        })
-    }
-}
-
-export const getCart = async (req, res) => {
-    try {
-        const { id } = req.user
-        const cartData = await cartModel.aggregate([
-            {
-                $match: { userId: new mongoose.Types.ObjectId(id) }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: '_id',
-                    as: "userId"
-                }
-            },
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "productId",
-                    foreignField: '_id',
-                    as: "productId"
-                }
-            },
-            {
-                $unwind: "$userId"
-            },
-            {
-                $unwind: "$productId"
-            },
-            {
-                $project: {
-                    "userId.contact": 0,
-                    "userId.password": 0,
-                    "userId.role": 0,
-                    "userId.createdAt": 0,
-                    "userId.__v": 0,
-                    "productId.name": 0,
-                    "productId.price": 0,
-                    "productId.status": 0,
-                    "productId.stockStatus": 0,
-                    "productId.quantity": 0,
-                    "productId.category": 0,
-                    "productId.subCategory": 0,
-                    "productId.productImage": 0,
-                    "productId.__v": 0,
-                    "__v": 0
-                }
-            }
-        ])
-        if (cartData) {
-            return res.status(201).json({
-                data: cartData,
-                message: "Cart"
-            })
-        }
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message
-        })
-    }
-}
-
-export const getAllCart = async (req, res) => {
-    try {
-        const cartData = await cartModel.aggregate([
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: '_id',
-                    as: "userId"
-                }
-            },
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "productId",
-                    foreignField: '_id',
-                    as: "productId"
-                }
-            },
-            {
-                $unwind: "$userId"
-            },
-            {
-                $unwind: "$productId"
-            },
-            {
-                $project: {
-                    "userId.contact": 0,
-                    "userId.password": 0,
-                    "userId.role": 0,
-                    "userId.createdAt": 0,
-                    "userId.__v": 0,
-                    "productId.name": 0,
-                    "productId.price": 0,
-                    "productId.status": 0,
-                    "productId.stockStatus": 0,
-                    "productId.quantity": 0,
-                    "productId.category": 0,
-                    "productId.subCategory": 0,
-                    "productId.productImage": 0,
-                    "productId.__v": 0,
-                    "__v": 0
-                }
-            }
-        ])
-        if (cartData) {
-            return res.status(201).json({
-                message: "all Cart",
-                length: cartData.length,
-                data: cartData,
-            })
-        }
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message
-        })
-    }
-}
-
-export const updateCart = async (req, res) => {
-    try {
-        const { status, cartID } = req.params;
-        const cart = await cartModel.findOne({ _id: cartID, userId: req.user.id });
-        if (!cart) throw new Error("not found cart")
-        let cartQuantity = cart.quantity;
-        if (status === "increment") {
-            cartQuantity += 1;
         } else {
-            cartQuantity -= 1;
-        }
-        if (cartQuantity == 0) {
-            const delCart = await cartModel.deleteOne({ _id: cart.id });
-            if (delCart.acknowledged) {
-                return res.status(201).json({
-                    status: "deleted",
-                    data: {
-                        delCart
-                    }
-                })
-            }
-        }
-
-        if (cartQuantity > 10) {
-            throw new Error("you cannot add more than 10 items")
-        }
-
-        const updateQuantity = await cartModel.updateOne({ _id: cart.id }, { $set: { quantity: cartQuantity } })
-        if (updateQuantity.acknowledged) {
             return res.status(200).json({
-                status: "added to cart",
+                message: "limit exceed"
+            })
+        }
+    }
+    const addCart = await cartModel.create({
+        userID: id,
+        productID: productID,
+        colorID: colorID,
+        sizeID: sizeID
+    })
+    return res.status(201).json({
+        status: "success",
+        addCart
+    })
+})
+
+export const updateCart = catchAsync(async (req, res) => {
+    const { status, cartID } = req.params;
+    const cart = await cartModel.findOne({ _id: cartID, userID: req.user.id });
+    if (!cart) throw new Error("not found cart")
+    let cartQuantity = cart.quantity;
+    if (status === "increment") {
+        cartQuantity += 1;
+    } else {
+        cartQuantity -= 1;
+    }
+
+    if (cartQuantity == 0) {
+        const delCart = await cartModel.deleteOne({ _id: cart.id });
+        if (delCart.acknowledged) {
+            return res.status(201).json({
+                status: "deleted",
                 data: {
-                    updateQuantity
+                    delCart
                 }
             })
         }
-    } catch (error) {
-        return res.status(500).json({
-            status: "error",
-            messgae: error.message
-        })
     }
-}
 
-export const delCart = async (req, res) => {
-    try {
-        const id = req.params.id
-        const delData = await cartModel.deleteOne({ _id: id, userId: req.user.id })
-        if (delData.deletedCount<=0) throw new Error("can't find items")
-        return res.status(201).json({
-            message: "Item deleted",
-            delData
-        })
-    } catch (error) {
-        return res.status(400).json({
-            message: error.message
+    if (cartQuantity > 10) {
+        throw new Error("you cannot add more than 10 items")
+    }
+
+    const updateQuantity = await cartModel.updateOne({ _id: cart.id }, { $set: { quantity: cartQuantity } })
+    if (updateQuantity.acknowledged) {
+        return res.status(200).json({
+            status: "added to cart",
+            data: {
+                updateQuantity
+            }
         })
     }
-}
+})
+
+export const delCart = catchAsync(async (req, res) => {
+    const id = req.params.id
+    const delData = await cartModel.deleteOne({ _id: id, userID: req.user.id })
+    if (delData.deletedCount <= 0) throw new Error("can't find items")
+    return res.status(201).json({
+        message: "Item deleted",
+        delData
+    })
+})
